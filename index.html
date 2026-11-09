@@ -374,7 +374,7 @@ const $=s=>APP.querySelector(s);
 const SC=APP.closest("[data-scroller]");            // en la vista previa, la pantalla simulada hace scroll
 const scrollEl=()=>SC||document.scrollingElement;
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-const imgs=p=>(p.fotos||[p.file]).map(f=>"img/"+f+".jpg");
+const imgs=p=>(p.fotos||[p.file]).map(f=>f+".jpg");
 const img=p=>imgs(p)[0];
 const cols=p=>[].concat(p.color);
 const colTxt=p=>cols(p).join(", ");
