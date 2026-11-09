@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catálogo Pisada</title>
+<meta name="description" content="Pisos y miscas desde Medellín para toda Colombia. Lo ves, lo pides, te llega.">
+<meta name="theme-color" content="#0a0f1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: bodega de tenis y ropa — cada producto es una caja con su etiqueta de referencia; pestañas Zapatos / Camisas, filtros fijos, rejilla por marca.
+   Paleta "Ritmo y calor": naranja atardecer, amarillo graffiti, azul caribeño, blanco arena, azul oscuro profundo. */
+/* Look único oscuro (según la referencia enviada): fondo azul casi negro, texto arena, naranja atardecer como acento,
+   amarillo graffiti y azul caribeño de apoyo. */
+:root{
+  --bg:#0a0f1a; --surface:#121b2c; --ink:#f7f3ec; --muted:#9ea9bc; --line:#26324a;
+  --accent:#ff6b1a; --accent-ink:#ffffff; --sun:#ffd21f; --sun-ink:#0a0f1a; --sea:#17b4d8; --tag:#0a0f1a; --tag-ink:#f7f3ec; --wa:#1fa855; --hot:#ff6b1a; --frame:#060a12;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 14px 32px -16px rgba(0,0,0,.8);
+  --f-display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.app{container:app/inline-size;background:var(--bg);color:var(--ink);font-family:var(--f-body);min-height:100%}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:where(.app) button{font:inherit;color:inherit}
+:where(.app) :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Cabecera */
+.hero{padding-block:28px 6px}
+.logo{font-family:var(--f-display);font-weight:900;font-stretch:125%;color:var(--ink);font-size:clamp(40px,8vw,76px);line-height:.85;letter-spacing:-.02em;text-transform:uppercase;margin:0}
+.logo span,.mini span{color:var(--accent)}
+.slogan{margin:14px 0 0;font-family:var(--f-display);font-weight:900;font-stretch:115%;text-transform:uppercase;font-size:clamp(22px,4cqi,32px);line-height:1.05;letter-spacing:-.005em;text-wrap:balance}
+.slogan span{color:var(--accent)}
+.tagline{margin:6px 0 0;color:var(--muted);max-width:52ch;text-wrap:pretty}
+.secs{display:flex;align-items:baseline;gap:18px;padding-block:22px 6px;flex-wrap:wrap}
+.sec{font-family:var(--f-display);font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:clamp(28px,7cqi,44px);line-height:1;letter-spacing:-.01em;background:none;border:0;padding:0;cursor:pointer;color:var(--muted)}
+.sec[aria-current="true"]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.sec{padding-bottom:8px;white-space:nowrap}
+.sec small{font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.04em;color:var(--muted);margin-left:6px;vertical-align:middle}
+
+/* Barra de filtros */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar .wrap{padding-block:10px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;align-items:center;min-width:0}
+.mini{font-family:var(--f-display);font-weight:900;font-stretch:125%;text-transform:uppercase;font-size:20px;line-height:1;flex:none;max-width:0;overflow:hidden;opacity:0;margin-right:-8px;transition:max-width .3s ease,opacity .3s ease,margin .3s ease}
+.app.fx-shrink.scrolled .mini{max-width:120px;opacity:1;margin-right:4px}
+.search{position:relative;flex:1 1 auto;min-width:0;max-width:380px}
+.search input{width:100%;height:44px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:0 12px 0 38px;font:500 15px var(--f-body)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;min-width:0;flex:1 1 auto}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 13px;border-radius:999px;border:1.5px solid var(--line);background:transparent;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s}
+.chip small{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:500}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip[aria-pressed="true"] small{color:inherit;opacity:.7}
+.chip.ghost{background:transparent}
+.brands .chip{font-family:var(--f-display);font-stretch:108%;font-weight:800;text-transform:uppercase;letter-spacing:.02em;font-size:13px}
+.dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(127,127,127,.45);flex:none;display:inline-block}
+.colors .chip{height:32px;padding:0 11px;font-size:13px;font-weight:500}
+.label{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:none;width:52px}
+
+/* Rejilla */
+main{padding-block:14px 120px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.grp{grid-column:1/-1;margin:14px 0 -4px;display:flex;align-items:baseline;gap:10px;font-family:var(--f-display);font-weight:900;font-stretch:115%;text-transform:uppercase;font-size:22px;letter-spacing:-.005em;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.grp:first-child{margin-top:4px}
+.grp small{font-family:var(--f-mono);font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.04em}
+.card{background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:0;position:relative;transition:transform .45s cubic-bezier(.2,.7,.2,1),opacity .45s ease}
+.ph{position:relative;aspect-ratio:4/5;background:var(--line);cursor:zoom-in;border:0;padding:0;display:block;width:100%;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.card:hover .ph img{transform:scale(1.03)}
+.ref{position:absolute;left:10px;top:10px;font-variant-numeric:tabular-nums;background:rgba(247,243,236,.94);color:#0a0f1a;font:700 12px var(--f-mono);letter-spacing:.04em;padding:5px 8px;border-radius:5px;pointer-events:none}
+.pick{position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#14171c!important;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.pick svg{width:18px;height:18px}
+.pick[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)!important}
+.info{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.brand{font-family:var(--f-display);font-weight:800;font-stretch:110%;text-transform:uppercase;letter-spacing:.03em;font-size:14px;line-height:1.1}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.col{display:inline-flex;align-items:center;gap:6px;text-transform:capitalize}
+.ask{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;height:42px;border-radius:10px;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:14px;transition:transform .15s}
+.ask svg{width:18px;height:18px;flex:none}
+.short{display:none}
+.soon{padding:70px 0 40px;text-align:center;color:var(--muted);max-width:46ch;margin:0 auto;text-wrap:pretty}
+.soon b{display:block;font-family:var(--f-display);font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:26px;color:var(--ink);margin-bottom:8px}
+.empty{padding:60px 0;text-align:center;color:var(--muted)}
+.empty b{display:block;font-family:var(--f-display);font-size:22px;color:var(--ink);margin-bottom:4px}
+footer{color:var(--muted);font-size:13px;padding-block:8px 24px;border-top:1px solid var(--line)}
+
+@container app (max-width:560px){
+  .hero{padding-block:20px 0}
+  .secs{padding-block:16px 2px;flex-wrap:nowrap;gap:16px}
+  .sec{font-size:22px}
+  .sec small{font-size:10px;margin-left:4px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .grp{font-size:18px;margin-top:10px}
+  .info{padding:8px 9px 10px;gap:6px}
+  .meta{font-size:12px}
+  .brand{font-size:13px}
+  .long{display:none}.short{display:inline}
+  .ask{height:38px;font-size:13px}
+  .label{display:none}
+  .row.top{flex-wrap:wrap}
+  .row.top .search{max-width:none}
+  .row.top .chips{flex-basis:100%}
+}
+
+/* Carrito: botón flotante + panel lateral (hoja inferior en celular) */
+.cartfab{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:26;display:flex;align-items:center;gap:10px;height:62px;padding:0 20px 0 14px;border-radius:999px;border:0;background:var(--ink);color:var(--bg)!important;cursor:pointer;box-shadow:0 12px 30px -10px rgba(10,14,30,.55);font-weight:700}
+.cartfab .ico{width:38px;height:38px;display:block}
+.cartfab .ico svg{width:100%;height:100%;display:block;transform-origin:50% 14%}
+.cartfab .lbl{font-size:15px;white-space:nowrap}
+.cartfab .n{min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--sun);color:var(--sun-ink);font:700 13px var(--f-mono);display:grid;place-items:center}
+.cartfab .n.zero{background:transparent;border:1px solid currentColor;color:inherit;opacity:.6}
+.scrim{position:fixed;inset:0;z-index:44;background:rgba(6,20,36,.55);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:45;width:min(420px,100%);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;transform:translateX(105%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:-20px 0 50px -20px rgba(0,0,0,.35);padding-top:env(safe-area-inset-top,0px)}
+.drawer.on{transform:none}
+.dh{display:flex;align-items:center;gap:12px;padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+.dh .ico{width:40px;height:40px;flex:none;color:var(--ink)}
+.dh h2{margin:0;font-family:var(--f-display);font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:22px;line-height:1;flex:1}
+.dh h2 small{display:block;font:500 12px var(--f-mono);letter-spacing:.04em;color:var(--muted);text-transform:none;margin-top:4px}
+.dclose{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center;cursor:pointer}
+.dclose svg{width:18px;height:18px}
+.items{flex:1;overflow-y:auto;padding:8px 18px;display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);transition:opacity .25s,transform .25s}
+.item img{width:72px;height:72px;object-fit:cover;border-radius:10px;display:block;background:var(--line)}
+.item b{font:700 14px var(--f-mono);display:block}
+.item .br{font-family:var(--f-display);font-weight:800;text-transform:uppercase;font-size:13px;letter-spacing:.02em}
+.item span{font-size:13px;color:var(--muted);display:block}
+.item button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--muted)!important}
+.item button svg{width:16px;height:16px}
+.item.out{opacity:0;transform:translateX(30px)}
+.dempty{margin:auto;text-align:center;color:var(--muted);padding:30px 10px;max-width:30ch}
+.dempty .ico{width:84px;height:84px;margin:0 auto 10px;color:var(--ink);opacity:.8}
+.dempty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.df{padding:14px 18px calc(18px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.df label{font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.df input{width:110px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:0 12px;font:600 15px var(--f-body);text-align:center}
+.send{height:50px;border-radius:12px;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px}
+.send svg{width:20px;height:20px}
+.send[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.clear{background:transparent;border:0;color:var(--muted)!important;font-size:13px;cursor:pointer;text-decoration:underline;align-self:center;padding:4px}
+.lbadd{background:rgba(255,255,255,.14)}
+@container app (max-width:560px){
+  .cartfab{height:58px;padding:0 14px 0 10px}
+  .cartfab .lbl{display:none}
+  .drawer{top:auto;left:0;width:100%;max-height:86%;border-radius:22px 22px 0 0;transform:translateY(105%);padding-top:0}
+  .drawer::before{content:"";width:42px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 0;flex:none}
+  .dh{padding-top:10px}
+}
+
+/* Visor */
+.lb{position:fixed;inset:0;z-index:40;background:rgba(6,20,36,.95);display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:calc(12px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));overflow:hidden}
+.lb img{flex:1 1 auto;min-height:0;width:100%;object-fit:contain;border-radius:8px;transition:transform .3s ease;touch-action:manipulation}
+.lb .top{display:flex;justify-content:space-between;align-items:center;color:#fff;gap:10px;padding-inline:4px;flex:none}
+.lb .top b{font:700 16px var(--f-mono)}
+.lb .top em{font-style:normal;opacity:.7;margin-left:10px;font-size:14px}
+.ic{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff!important;display:grid;place-items:center;cursor:pointer;flex:none}
+.ic svg{width:20px;height:20px}
+.nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2}
+.prev{left:max(12px,env(safe-area-inset-left,0px))}.next{right:max(12px,env(safe-area-inset-right,0px))}
+.lb .bot{display:flex;justify-content:center;gap:10px;flex:none;position:relative;z-index:2}
+.lb .bot a,.lb .bot button{flex:0 1 260px;min-width:0;height:48px;padding:0 14px;border-radius:12px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;cursor:pointer;border:0;color:#fff;white-space:nowrap}
+.lb .bot a{background:var(--wa);color:#fff}
+.lb .bot button{background:rgba(255,255,255,.14);color:#fff!important}
+.lb .bot svg{width:18px;height:18px;flex:none}
+.hint{margin:0;text-align:center;color:rgba(255,255,255,.55);font-size:12px;flex:none}
+@container app (max-width:560px){.lb .bot a,.lb .bot button{flex:1 1 0;font-size:13px;padding:0 10px}}
+
+/* Carruseles destacados */
+.feat{display:flex;flex-direction:column;gap:26px;margin-bottom:30px}
+.rail{min-width:0}
+.rail-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.rail-h h3{margin:0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;font-family:var(--f-display);font-weight:900;font-stretch:115%;text-transform:uppercase;font-size:26px;line-height:1;letter-spacing:-.005em}
+.rail-h h3 small{flex-basis:100%;font:500 13px var(--f-body);text-transform:none;letter-spacing:0;color:var(--muted);order:3}
+.ri{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--sea);color:#fff;flex:none}
+.ri svg{width:20px;height:20px}
+.rail-hot .ri{background:var(--hot);color:#fff}
+.rail-nav{display:flex;gap:6px;flex:none}
+.rail-nav button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.rail-nav button svg{width:18px;height:18px}
+.track{display:grid;grid-auto-flow:column;grid-auto-columns:clamp(160px,19%,230px);gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:4px 2px 10px}
+.track::-webkit-scrollbar{display:none}
+.fcard{position:relative;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);transition:transform .3s ease}
+.fcard .ph img{transition:transform .35s ease}
+.rail-hot .fcard{box-shadow:0 0 0 2px var(--hot),var(--shadow)}
+.rail-hot .fcard:nth-child(2n){box-shadow:0 0 0 2px var(--sea),var(--shadow)}
+.rail-hot .fcard .ph::before{content:"";position:absolute;z-index:1;inset:auto 0 0;height:38%;background:linear-gradient(transparent,rgba(255,107,26,.35));pointer-events:none}
+.rail-hot .fcard:nth-child(2n) .ph::before{background:linear-gradient(transparent,rgba(23,180,216,.35))}
+.finfo{padding:9px 11px 11px;display:flex;flex-direction:column;gap:1px}
+.finfo b{font-family:var(--f-display);font-weight:800;font-stretch:110%;text-transform:uppercase;font-size:14px;letter-spacing:.02em}
+.finfo span{font-size:12.5px;color:var(--muted)}
+.rank{position:absolute;z-index:2;left:8px;bottom:8px;font:900 76px/.78 var(--f-display);font-stretch:125%;color:var(--sun);-webkit-text-stroke:2.5px #0e2a47;paint-order:stroke fill;text-shadow:0 4px 16px rgba(0,0,0,.35);pointer-events:none;letter-spacing:-.04em}
+.hotb{position:absolute;z-index:2;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:4px;background:var(--hot);color:#fff;font:800 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px 4px 6px;border-radius:999px;pointer-events:none}
+.hotb svg{width:13px;height:13px}
+@container app (max-width:560px){
+  .track{grid-auto-columns:44%;gap:10px}
+  .rail-nav{display:none}
+  .rail-h h3{font-size:21px}
+  .ri{width:30px;height:30px}
+  .rank{font-size:56px;bottom:6px}
+  .hotb{bottom:8px}
+}
+/* ===== Efectos (se activan con clases fx-* en .app) ===== */
+/* 1. Aparición al deslizar */
+.app.fx-reveal .card.pre{opacity:0;transform:translateY(40px) scale(.94)}
+/* 2. Toque, hover y rebote */
+.app.fx-press .card:active{transform:scale(.96)}
+@media (hover:hover){
+  .app.fx-press .card:hover{transform:translateY(-6px);box-shadow:0 2px 4px rgba(20,23,28,.06),0 22px 40px -18px rgba(20,23,28,.4)}
+  .app.fx-press .card:hover .ph img,.app.fx-press .fcard:hover .ph img{transform:scale(1.07)}
+  .app.fx-press .fcard:hover{transform:translateY(-5px)}
+  .app.fx-press .rail-nav button:hover{border-color:var(--ink)}
+  .app.fx-press .chip:hover{border-color:var(--ink)}
+  .app.fx-press .cartfab:hover{transform:translateY(-3px)}
+}
+.app.fx-press .ask:active,.app.fx-press .send:active{transform:scale(.95)}
+.app.fx-press .pick.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.app.fx-press .cartfab.bump{animation:bump .5s ease}
+.app.fx-press .cartfab.bump .ico svg{animation:swing .9s ease}
+.app.fx-press .cartfab{transition:transform .2s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes bump{0%{transform:none}30%{transform:scale(1.12)}100%{transform:none}}
+@keyframes swing{0%{transform:rotate(0)}20%{transform:rotate(16deg)}45%{transform:rotate(-12deg)}70%{transform:rotate(6deg)}100%{transform:rotate(0)}}
+/* 3. Brillo de vitrina */
+.app.fx-shine .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);transform:translateX(-120%);animation:shine 6s ease-in-out infinite;animation-delay:calc(var(--i,0) * .35s);pointer-events:none}
+@keyframes shine{0%,72%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+/* 5. Cascada al filtrar */
+.app.fx-filter .grid{transition:opacity .16s ease,transform .16s ease}
+.app.fx-filter .grid.leaving{opacity:0;transform:translateY(10px)}
+.app.fx-filter .card.enter{animation:enter .6s cubic-bezier(.16,.8,.24,1) both;animation-delay:calc(min(var(--i,0),14) * 55ms)}
+.app.fx-filter .grp.enter{animation:grp .5s ease both;animation-delay:calc(min(var(--i,0),14) * 55ms)}
+@keyframes enter{from{opacity:0;transform:translateY(46px) scale(.88) rotate(-1.5deg)}to{opacity:1;transform:none}}
+@keyframes grp{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+/* 6. Visor con zoom */
+.app.fx-zoom .lb:not([hidden]){animation:fade .25s ease}
+.app.fx-zoom .lb:not([hidden]) img.in{animation:zoomin .35s cubic-bezier(.2,.8,.2,1)}
+.app.fx-zoom .lb img.z{transform:scale(2.2);cursor:zoom-out}
+@keyframes fade{from{background:rgba(6,20,36,0)}}
+@keyframes zoomin{from{transform:scale(.82);opacity:.2}}
+/* 7. Vuelo al carrito: la foto viaja hasta el botón (JS) */
+.fly{position:fixed;z-index:50;border-radius:12px;object-fit:cover;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media (prefers-reduced-motion:reduce){.app *{animation:none!important;transition:none!important}.app .card.pre{opacity:1;transform:none}}
+.lb .bot span{overflow:hidden;text-overflow:ellipsis}
+
+/* Detalles y fotos múltiples */
+.hero .logo{text-shadow:none}
+.col em{font-style:normal;white-space:nowrap;text-transform:none}
+.col .dot+.dot{margin-left:-9px;box-shadow:0 0 0 1.5px var(--surface)}
+.nph{position:absolute;right:8px;bottom:8px;background:rgba(10,28,49,.78);color:#f5efe4;font:600 11px var(--f-mono);padding:3px 7px;border-radius:999px;pointer-events:none}
+.app[data-section="camisas"] .card .ph,.app[data-section="camisas"] .fcard .ph{aspect-ratio:1/1;background:var(--frame)}
+.app[data-section="camisas"] .card .ph img,.app[data-section="camisas"] .fcard .ph img{object-fit:contain}
+.thumbs{display:flex;justify-content:center;gap:8px;flex:none;overflow-x:auto;padding:2px}
+.thumbs button{width:54px;height:54px;border-radius:8px;overflow:hidden;border:2px solid transparent;padding:0;background:#000;cursor:pointer;flex:none;opacity:.6}
+.thumbs button[aria-pressed="true"]{border-color:var(--sun);opacity:1}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Elegir número de WhatsApp */
+.wachoose{position:fixed;inset:0;z-index:60;background:rgba(4,8,15,.62);display:flex;align-items:center;justify-content:center;padding:20px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.wabox{width:min(380px,100%);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:22px 20px 14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.7);animation:wain .25s cubic-bezier(.2,.8,.2,1)}
+.wabox h2{margin:0;font-family:var(--f-display);font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:22px;line-height:1.05}
+.wabox p{margin:6px 0 16px;color:var(--muted);font-size:14px}
+.walist{display:flex;flex-direction:column;gap:10px}
+.waopt{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:var(--wa);color:#fff;text-decoration:none}
+.waopt svg{width:26px;height:26px;flex:none}
+.waopt b{display:block;font-size:15px}
+.waopt small{display:block;font:500 13px var(--f-mono);opacity:.9}
+.wacancel{display:block;margin:10px auto 0;background:none;border:0;color:var(--muted)!important;font-size:14px;cursor:pointer;padding:8px 12px}
+@keyframes wain{from{transform:translateY(16px) scale(.97);opacity:0}}
+@container app (max-width:560px){.wachoose{align-items:flex-end}.wabox{border-radius:22px}}
+@media (prefers-reduced-motion:reduce){.wabox{animation:none}}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+</style>
+<style>html,body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div class="app" id="app">
+<header class="hero"><div class="wrap">
+  <h1 class="logo">Pisa<span>da</span></h1>
+  <p class="slogan">Lo ves, lo pides, <span>te llega.</span></p>
+  <p class="tagline">Pisos y miscas desde Medellín para toda Colombia.</p>
+  <nav class="secs" id="secs" aria-label="Secciones"></nav>
+</div></header>
+
+<nav class="bar" aria-label="Filtros"><div class="wrap">
+  <div class="row top">
+    <span class="mini" aria-hidden="true">Pisa<span>da</span></span>
+    <label class="search" for="q">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar marca o referencia" autocomplete="off">
+    </label>
+    <div class="chips" id="cats" role="group" aria-label="Categoría"></div>
+  </div>
+  <div class="row brands"><span class="label">Marca</span><div class="chips" id="brands" role="group" aria-label="Marca"></div></div>
+  <div class="row colors" id="colorsRow" hidden><span class="label">Color</span><div class="chips" id="colors" role="group" aria-label="Color"></div></div>
+</div></nav>
+
+<main><div class="wrap">
+  <div class="feat" id="feat" hidden></div>
+  <div class="grid" id="grid"></div>
+  <div class="soon" id="soon" hidden><b>Muy pronto: <span id="soonName">camisas</span></b>Estamos preparando esta sección. Mientras tanto, mira los zapatos o escríbenos por WhatsApp si buscas algo en particular.</div>
+  <div class="empty" id="empty" hidden><b>Sin resultados</b>Prueba con otra marca o referencia, o quita los filtros.</div>
+</div></main>
+
+<footer><div class="wrap">Precios y tallas disponibles se confirman por WhatsApp. Cada modelo tiene su referencia (por ejemplo #Z2.15 o #C1.04): menciónala al preguntar.</div></footer>
+
+<button class="cartfab" id="cartBtn" type="button" aria-label="Ver mi selección">
+  <span class="ico"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5h18"/><path d="M16 4.5 12 12.6M16 4.5l4.6 10"/><g transform="translate(12 12.6) rotate(118)"><path d="M0 0h3.6c.6 1.8 2 2.8 4 3.1l2.4.4c1.2.2 2 1 2 2.1v.6c0 .5-.4.8-.8.8H.8C.3 7 0 6.7 0 6.2Z" fill="currentColor" fill-opacity=".2"/><path d="M.4 5.4h11.4" stroke-width="2.4"/><path d="M4.4 2.2 5.6.9M6.3 3 7.4 1.8"/></g><g transform="translate(20.6 14.5) rotate(70) scale(1 -1)"><path d="M0 0h3.6c.6 1.8 2 2.8 4 3.1l2.4.4c1.2.2 2 1 2 2.1v.6c0 .5-.4.8-.8.8H.8C.3 7 0 6.7 0 6.2Z" fill="currentColor" fill-opacity=".2"/><path d="M.4 5.4h11.4" stroke-width="2.4"/><path d="M4.4 2.2 5.6.9M6.3 3 7.4 1.8"/></g></svg></span><span class="lbl">Mi selección</span><span class="n zero" id="cartN">0</span>
+</button>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Mi selección" aria-hidden="true">
+  <div class="dh"><span class="ico"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5h18"/><path d="M16 4.5 12 12.6M16 4.5l4.6 10"/><g transform="translate(12 12.6) rotate(118)"><path d="M0 0h3.6c.6 1.8 2 2.8 4 3.1l2.4.4c1.2.2 2 1 2 2.1v.6c0 .5-.4.8-.8.8H.8C.3 7 0 6.7 0 6.2Z" fill="currentColor" fill-opacity=".2"/><path d="M.4 5.4h11.4" stroke-width="2.4"/><path d="M4.4 2.2 5.6.9M6.3 3 7.4 1.8"/></g><g transform="translate(20.6 14.5) rotate(70) scale(1 -1)"><path d="M0 0h3.6c.6 1.8 2 2.8 4 3.1l2.4.4c1.2.2 2 1 2 2.1v.6c0 .5-.4.8-.8.8H.8C.3 7 0 6.7 0 6.2Z" fill="currentColor" fill-opacity=".2"/><path d="M.4 5.4h11.4" stroke-width="2.4"/><path d="M4.4 2.2 5.6.9M6.3 3 7.4 1.8"/></g></svg></span><h2>Mi selección<small id="dCount">0 referencias</small></h2>
+    <button class="dclose" id="dClose" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="items" id="items"></div>
+  <div class="df" id="dFoot">
+    <label for="talla">Tu talla (opcional)<input id="talla" type="text" inputmode="decimal" placeholder="Ej: 40" maxlength="8" autocomplete="off"></label>
+    <a class="send" id="send" href="#" target="_blank" rel="noopener"></a>
+    <button class="clear" id="clear" type="button">Vaciar selección</button>
+  </div>
+</aside>
+
+<div class="wachoose" id="waChoose" hidden role="dialog" aria-modal="true" aria-labelledby="waTitle">
+  <div class="wabox">
+    <h2 id="waTitle">¿A quién le escribes?</h2>
+    <p>Tu mensaje ya va listo con las referencias.</p>
+    <div class="walist" id="waList"></div>
+    <button class="wacancel" id="waClose" type="button">Cancelar</button>
+  </div>
+</div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Vista ampliada">
+  <div class="top"><div><b id="lbRef"></b><em id="lbMeta"></em></div>
+    <button class="ic" id="lbClose" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <img id="lbImg" alt="">
+  <div class="thumbs" id="lbThumbs" hidden></div>
+  <button class="ic nav prev" id="lbPrev" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 5-7 7 7 7"/></svg></button>
+  <button class="ic nav next" id="lbNext" type="button" aria-label="Siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>
+  <p class="hint" id="lbHint" hidden>Toca dos veces la foto para acercar</p>
+  <div class="bot">
+    <button id="lbAdd" class="lbadd" type="button"></button>
+    <a id="lbAsk" href="#" target="_blank" rel="noopener"></a>
+      </div>
+</div>
+</div>
+
+<script>
+/* ===== CONFIGURACIÓN — cambiar aquí ===== */
+const WHATSAPP = [["Línea 1","573005932632"],["Línea 2","573016923455"]];   // [nombre, número con indicativo sin + ni espacios]. Con 2 o más, el cliente elige a quién escribir.
+const EFECTOS = ["reveal", "press", "shrink", "filter", "zoom", "fly"];   // reveal, press, shine, shrink, filter, zoom, fly
+const SECCIONES = [["zapatos","Pisos"],["camisas","Miscas"]];
+const DESTACADOS = {"zapatos": {"hot": ["#Z2.89", "#Z1.45", "#Z2.83", "#Z1.25", "#Z1.29", "#Z1.53", "#Z2.06", "#Z2.07", "#Z2.13", "#Z2.17", "#Z2.21", "#Z2.23", "#Z2.59", "#Z2.68", "#Z1.17", "#Z2.49"], "preguntados": ["#Z2.29", "#Z2.32", "#Z2.58", "#Z2.62", "#Z2.75", "#Z2.88", "#Z2.37", "#Z1.13", "#Z1.51", "#Z2.84", "#Z1.15", "#Z1.04", "#Z2.19", "#Z2.04", "#Z2.24"]}};   // carruseles: hot y más preguntados, por sección
+const USE_HASH = true;
+const PRODUCTOS = [{"ref":"#Z1.01","file":"p1-01","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.02","file":"p1-02","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"beige","prov":1},{"ref":"#Z1.03","file":"p1-03","sec":"zapatos","marca":"Diesel","cat":"casual","color":"blanco","prov":1},{"ref":"#Z1.04","file":"p1-04","sec":"zapatos","marca":"Louis Vuitton","cat":"urbano","color":"beige","prov":1},{"ref":"#Z1.05","file":"p1-05","sec":"zapatos","marca":"Off-White","cat":"urbano","color":"gris","prov":1},{"ref":"#Z1.06","file":"p1-06","sec":"zapatos","marca":"Louis Vuitton","cat":"urbano","color":"beige","prov":1},{"ref":"#Z1.07","file":"p1-07","sec":"zapatos","marca":"Adidas","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.08","file":"p1-08","sec":"zapatos","marca":"Louis Vuitton","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.09","file":"p1-09","sec":"zapatos","marca":"Under Armour","cat":"deportivo","color":"gris","prov":1},{"ref":"#Z1.10","file":"p1-10","sec":"zapatos","marca":"Skechers","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.11","file":"p1-11","sec":"zapatos","marca":"New Balance","cat":"casual","color":"gris","prov":1},{"ref":"#Z1.12","file":"p1-12","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.13","file":"p1-13","sec":"zapatos","marca":"Adidas","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.14","file":"p1-14","sec":"zapatos","marca":"Boss","cat":"casual","color":"negro","prov":1},{"ref":"#Z1.15","file":"p1-15","sec":"zapatos","marca":"Amiri","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.16","file":"p1-16","sec":"zapatos","marca":"Under Armour","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.17","file":"p1-17","sec":"zapatos","marca":"On","cat":"deportivo","color":"blanco","prov":1},{"ref":"#Z1.18","file":"p1-18","sec":"zapatos","marca":"Nike","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.19","file":"p1-19","sec":"zapatos","marca":"Prada","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.20","file":"p1-20","sec":"zapatos","marca":"Vans","cat":"urbano","color":"blanco","prov":1},{"ref":"#Z1.21","file":"p1-21","sec":"zapatos","marca":"Nike","cat":"urbano","color":"gris","prov":1},{"ref":"#Z1.22","file":"p1-22","sec":"zapatos","marca":"Nike","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.23","file":"p1-23","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.24","file":"p1-24","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"beige","prov":1},{"ref":"#Z1.25","file":"p1-25","sec":"zapatos","marca":"Nike","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.26","file":"p1-26","sec":"zapatos","marca":"Diesel","cat":"casual","color":"negro","prov":1},{"ref":"#Z1.27","file":"p1-27","sec":"zapatos","marca":"Diesel","cat":"casual","color":"blanco","prov":1},{"ref":"#Z1.28","file":"p1-28","sec":"zapatos","marca":"New Balance","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.29","file":"p1-29","sec":"zapatos","marca":"Nike","cat":"urbano","color":"blanco","prov":1},{"ref":"#Z1.30","file":"p1-30","sec":"zapatos","marca":"Vans","cat":"urbano","color":"azul","prov":1},{"ref":"#Z1.31","file":"p1-31","sec":"zapatos","marca":"Boss","cat":"casual","color":"negro","prov":1},{"ref":"#Z1.32","file":"p1-32","sec":"zapatos","marca":"Jordan","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.33","file":"p1-33","sec":"zapatos","marca":"Adidas","cat":"casual","color":"blanco","prov":1},{"ref":"#Z1.34","file":"p1-34","sec":"zapatos","marca":"Adidas","cat":"casual","color":"café","prov":1},{"ref":"#Z1.35","file":"p1-35","sec":"zapatos","marca":"Puma","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.36","file":"p1-36","sec":"zapatos","marca":"Puma","cat":"urbano","color":"azul","prov":1},{"ref":"#Z1.37","file":"p1-37","sec":"zapatos","marca":"Puma","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.38","file":"p1-38","sec":"zapatos","marca":"Vans","cat":"urbano","color":"café","prov":1},{"ref":"#Z1.39","file":"p1-39","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"gris","prov":1},{"ref":"#Z1.40","file":"p1-40","sec":"zapatos","marca":"New Balance","cat":"casual","color":"rosado","prov":1},{"ref":"#Z1.41","file":"p1-41","sec":"zapatos","marca":"Adidas","cat":"casual","color":"blanco","prov":1},{"ref":"#Z1.42","file":"p1-42","sec":"zapatos","marca":"Nike","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.44","file":"p1-44","sec":"zapatos","marca":"Adidas","cat":"casual","color":"negro","prov":1},{"ref":"#Z1.45","file":"p1-45","sec":"zapatos","marca":"Off-White","cat":"urbano","color":"blanco","prov":1},{"ref":"#Z1.46","file":"p1-46","sec":"zapatos","marca":"Off-White","cat":"urbano","color":"blanco","prov":1},{"ref":"#Z1.47","file":"p1-47","sec":"zapatos","marca":"Calvin Klein","cat":"casual","color":"negro","prov":1},{"ref":"#Z1.48","file":"p1-48","sec":"zapatos","marca":"Off-White","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.49","file":"p1-49","sec":"zapatos","marca":"Vans","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.50","file":"p1-50","sec":"zapatos","marca":"Jordan","cat":"urbano","color":"rojo","prov":1},{"ref":"#Z1.51","file":"p1-51","sec":"zapatos","marca":"Adidas","cat":"casual","color":"azul","prov":1},{"ref":"#Z1.52","file":"p1-52","sec":"zapatos","marca":"Nike","cat":"urbano","color":"blanco","prov":1},{"ref":"#Z1.53","file":"p1-53","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.54","file":"p1-54","sec":"zapatos","marca":"Calvin Klein","cat":"casual","color":"blanco","prov":1},{"ref":"#Z1.55","file":"p1-55","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"beige","prov":1},{"ref":"#Z1.56","file":"p1-56","sec":"zapatos","marca":"Adidas","cat":"urbano","color":"beige","prov":1},{"ref":"#Z1.57","file":"p1-57","sec":"zapatos","marca":"On","cat":"deportivo","color":"gris","prov":1},{"ref":"#Z1.58","file":"p1-58","sec":"zapatos","marca":"On","cat":"deportivo","color":"rosado","prov":1},{"ref":"#Z1.59","file":"p1-59","sec":"zapatos","marca":"Louis Vuitton","cat":"urbano","color":"negro","prov":1},{"ref":"#Z1.60","file":"p1-60","sec":"zapatos","marca":"Louis Vuitton","cat":"urbano","color":"beige","prov":1},{"ref":"#Z1.61","file":"p1-61","sec":"zapatos","marca":"Adidas","cat":"casual","color":"café","prov":1},{"ref":"#Z1.62","file":"p1-62","sec":"zapatos","marca":"New Balance","cat":"deportivo","color":"negro","prov":1},{"ref":"#Z1.63","file":"p1-63","sec":"zapatos","marca":"New Balance","cat":"deportivo","color":"beige","prov":1},{"ref":"#Z1.64","file":"p1-64","sec":"zapatos","marca":"New Balance","cat":"deportivo","color":"beige","prov":1},{"ref":"#Z1.65","file":"p1-65","sec":"zapatos","marca":"New Balance","cat":"casual","color":"blanco","prov":1},{"ref":"#Z2.01","file":"p2-01","sec":"zapatos","marca":"Salomon","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.02","file":"p2-02","sec":"zapatos","marca":"Vans","cat":"casual","color":"blanco","prov":2},{"ref":"#Z2.03","file":"p2-03","sec":"zapatos","marca":"Adidas","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.04","file":"p2-04","sec":"zapatos","marca":"Jordan","cat":"urbano","color":"blanco","prov":2},{"ref":"#Z2.05","file":"p2-05","sec":"zapatos","marca":"Jordan","cat":"urbano","color":"negro","prov":2},{"ref":"#Z2.06","file":"p2-06","sec":"zapatos","marca":"Nike","cat":"urbano","color":"verde","prov":2},{"ref":"#Z2.07","file":"p2-07","sec":"zapatos","marca":"Nike","cat":"urbano","color":"rosado","prov":2},{"ref":"#Z2.08","file":"p2-08","sec":"zapatos","marca":"Nike","cat":"urbano","color":"café","prov":2},{"ref":"#Z2.09","file":"p2-09","sec":"zapatos","marca":"Jordan","cat":"urbano","color":"negro","prov":2},{"ref":"#Z2.10","file":"p2-10","sec":"zapatos","marca":"Nike","cat":"urbano","color":"beige","prov":2},{"ref":"#Z2.11","file":"p2-11","sec":"zapatos","marca":"Nike","cat":"urbano","color":"café","prov":2},{"ref":"#Z2.12","file":"p2-12","sec":"zapatos","marca":"Nike","cat":"urbano","color":"blanco","prov":2},{"ref":"#Z2.13","file":"p2-13","sec":"zapatos","marca":"Adidas","cat":"casual","color":"blanco","prov":2},{"ref":"#Z2.14","file":"p2-14","sec":"zapatos","marca":"Nike","cat":"urbano","color":"gris","prov":2},{"ref":"#Z2.15","file":"p2-15","sec":"zapatos","marca":"Nike","cat":"urbano","color":"beige","prov":2},{"ref":"#Z2.16","file":"p2-16","sec":"zapatos","marca":"New Balance","cat":"urbano","color":"beige","prov":2},{"ref":"#Z2.17","file":"p2-17","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.18","file":"p2-18","sec":"zapatos","marca":"New Balance","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.19","file":"p2-19","sec":"zapatos","marca":"New Balance","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.20","file":"p2-20","sec":"zapatos","marca":"Nike","cat":"urbano","color":"café","prov":2},{"ref":"#Z2.21","file":"p2-21","sec":"zapatos","marca":"Nike","cat":"urbano","color":"verde","prov":2},{"ref":"#Z2.22","file":"p2-22","sec":"zapatos","marca":"Nike","cat":"urbano","color":"verde","prov":2},{"ref":"#Z2.23","file":"p2-23","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.24","file":"p2-24","sec":"zapatos","marca":"Puma","cat":"casual","color":"beige","prov":2},{"ref":"#Z2.25","file":"p2-25","sec":"zapatos","marca":"Puma","cat":"casual","color":"blanco","prov":2},{"ref":"#Z2.26","file":"p2-26","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.27","file":"p2-27","sec":"zapatos","marca":"Nike","cat":"urbano","color":"rosado","prov":2},{"ref":"#Z2.28","file":"p2-28","sec":"zapatos","marca":"Jordan","cat":"urbano","color":"café","prov":2},{"ref":"#Z2.29","file":"p2-29","sec":"zapatos","marca":"Nike","cat":"urbano","color":"rosado","prov":2},{"ref":"#Z2.30","file":"p2-30","sec":"zapatos","marca":"Nike","cat":"urbano","color":"gris","prov":2},{"ref":"#Z2.31","file":"p2-31","sec":"zapatos","marca":"Nike","cat":"urbano","color":"café","prov":2},{"ref":"#Z2.32","file":"p2-32","sec":"zapatos","marca":"Nike","cat":"urbano","color":"azul","prov":2},{"ref":"#Z2.33","file":"p2-33","sec":"zapatos","marca":"Nike","cat":"urbano","color":"morado","prov":2},{"ref":"#Z2.34","file":"p2-34","sec":"zapatos","marca":"On","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.35","file":"p2-35","sec":"zapatos","marca":"On","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.36","file":"p2-36","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.37","file":"p2-37","sec":"zapatos","marca":"On","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.38","file":"p2-38","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.39","file":"p2-39","sec":"zapatos","marca":"On","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.40","file":"p2-40","sec":"zapatos","marca":"On","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.41","file":"p2-41","sec":"zapatos","marca":"On","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.42","file":"p2-42","sec":"zapatos","marca":"On","cat":"deportivo","color":"azul","prov":2},{"ref":"#Z2.43","file":"p2-43","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.44","file":"p2-44","sec":"zapatos","marca":"On","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.45","file":"p2-45","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.47","file":"p2-47","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.48","file":"p2-48","sec":"zapatos","marca":"On","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.49","file":"p2-49","sec":"zapatos","marca":"On","cat":"deportivo","color":"morado","prov":2},{"ref":"#Z2.50","file":"p2-50","sec":"zapatos","marca":"On","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.51","file":"p2-51","sec":"zapatos","marca":"On","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.52","file":"p2-52","sec":"zapatos","marca":"Salomon","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.53","file":"p2-53","sec":"zapatos","marca":"Salomon","cat":"deportivo","color":"azul","prov":2},{"ref":"#Z2.54","file":"p2-54","sec":"zapatos","marca":"Adidas","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.55","file":"p2-55","sec":"zapatos","marca":"Salomon","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.57","file":"p2-57","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.58","file":"p2-58","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.59","file":"p2-59","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.60","file":"p2-60","sec":"zapatos","marca":"Vans","cat":"casual","color":"café","prov":2},{"ref":"#Z2.62","file":"p2-62","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.63","file":"p2-63","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"blanco","prov":2},{"ref":"#Z2.64","file":"p2-64","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"verde","prov":2},{"ref":"#Z2.65","file":"p2-65","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.66","file":"p2-66","sec":"zapatos","marca":"Nike","cat":"urbano","color":"azul","prov":2},{"ref":"#Z2.68","file":"p2-68","sec":"zapatos","marca":"Nike","cat":"casual","color":"blanco","prov":2},{"ref":"#Z2.69","file":"p2-69","sec":"zapatos","marca":"Nike","cat":"urbano","color":"gris","prov":2},{"ref":"#Z2.71","file":"p2-71","sec":"zapatos","marca":"Nike","cat":"urbano","color":"azul","prov":2},{"ref":"#Z2.72","file":"p2-72","sec":"zapatos","marca":"Nike","cat":"urbano","color":"morado","prov":2},{"ref":"#Z2.74","file":"p2-74","sec":"zapatos","marca":"Nike","cat":"urbano","color":"gris","prov":2},{"ref":"#Z2.75","file":"p2-75","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.78","file":"p2-78","sec":"zapatos","marca":"New Balance","cat":"urbano","color":"gris","prov":2},{"ref":"#Z2.79","file":"p2-79","sec":"zapatos","marca":"Nike","cat":"urbano","color":"blanco","prov":2},{"ref":"#Z2.80","file":"p2-80","sec":"zapatos","marca":"New Balance","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.81","file":"p2-81","sec":"zapatos","marca":"Nike","cat":"deportivo","color":"negro","prov":2},{"ref":"#Z2.83","file":"p2-83","sec":"zapatos","marca":"Adidas","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.84","file":"p2-84","sec":"zapatos","marca":"Adidas","cat":"deportivo","color":"beige","prov":2},{"ref":"#Z2.85","file":"p2-85","sec":"zapatos","marca":"Adidas","cat":"casual","color":"blanco","prov":2},{"ref":"#Z2.86","file":"p2-86","sec":"zapatos","marca":"Adidas","cat":"casual","color":"blanco","prov":2},{"ref":"#Z2.87","file":"p2-87","sec":"zapatos","marca":"Nike","cat":"urbano","color":"gris","prov":2},{"ref":"#Z2.88","file":"p2-88","sec":"zapatos","marca":"Nike","cat":"urbano","color":"blanco","prov":2},{"ref":"#Z2.89","file":"p2-89","sec":"zapatos","marca":"Reebok","cat":"deportivo","color":"gris","prov":2},{"ref":"#Z2.90","file":"p2-90","sec":"zapatos","marca":"Puma","cat":"casual","color":"beige","prov":2},{"ref":"#C1.01","file":"c3-01","fotos":["c3-01"],"sec":"camisas","marca":"Y/OUT","cat":"urbano","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.02","file":"c3-02","fotos":["c3-02"],"sec":"camisas","marca":"Adidas","cat":"deportivo","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.03","file":"c3-03","fotos":["c3-03"],"sec":"camisas","marca":"Supreme","cat":"urbano","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.04","file":"c3-04","fotos":["c3-04"],"sec":"camisas","marca":"Saint Theory","cat":"urbano","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.05","file":"c3-05","fotos":["c3-05"],"sec":"camisas","marca":"Saint Theory","cat":"urbano","color":["blanco"],"prov":"C1"},{"ref":"#C1.06","file":"c3-13","fotos":["c3-13","c3-21"],"sec":"camisas","marca":"Jordan","cat":"deportivo","color":["blanco","rojo","negro"],"prov":"C1"},{"ref":"#C1.07","file":"c3-14","fotos":["c3-14"],"sec":"camisas","marca":"Essentials","cat":"casual","color":["blanco","verde","negro"],"prov":"C1"},{"ref":"#C1.08","file":"c3-15","fotos":["c3-15"],"sec":"camisas","marca":"Diesel","cat":"casual","color":["negro","blanco","rojo"],"prov":"C1"},{"ref":"#C1.09","file":"c3-16","fotos":["c3-16","c3-22"],"sec":"camisas","marca":"Chrome Hearts","cat":"casual","color":["negro","gris","blanco"],"prov":"C1"},{"ref":"#C1.10","file":"c3-17","fotos":["c3-17","c3-20"],"sec":"camisas","marca":"Amiri","cat":"casual","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.11","file":"c3-18","fotos":["c3-18","c3-19"],"sec":"camisas","marca":"Dior","cat":"casual","color":["negro","verde","blanco"],"prov":"C1"},{"ref":"#C1.12","file":"c3-23","fotos":["c3-23","c3-54"],"sec":"camisas","marca":"Jordan","cat":"deportivo","color":["rojo","blanco","negro"],"prov":"C1"},{"ref":"#C1.13","file":"c3-24","fotos":["c3-24","c3-55","c3-39"],"sec":"camisas","marca":"Jordan","cat":"deportivo","color":["negro","blanco","azul"],"prov":"C1"},{"ref":"#C1.14","file":"c3-25","fotos":["c3-25","c3-56","c3-43"],"sec":"camisas","marca":"Jordan","cat":"deportivo","color":["azul","blanco","negro"],"prov":"C1"},{"ref":"#C1.15","file":"c3-36","fotos":["c3-36"],"sec":"camisas","marca":"Jordan","cat":"deportivo","color":["blanco","negro","rojo"],"prov":"C1"},{"ref":"#C1.16","file":"c3-26","fotos":["c3-26","c3-57","c3-42"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["verde","blanco","negro"],"prov":"C1"},{"ref":"#C1.17","file":"c3-27","fotos":["c3-27","c3-58","c3-34"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["azul","negro","blanco"],"prov":"C1"},{"ref":"#C1.18","file":"c3-28","fotos":["c3-28","c3-59","c3-37"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["blanco","azul","negro"],"prov":"C1"},{"ref":"#C1.19","file":"c3-29","fotos":["c3-29","c3-60","c3-35"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["azul","blanco"],"prov":"C1"},{"ref":"#C1.20","file":"c3-30","fotos":["c3-30","c3-61","c3-41"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["blanco","negro","verde"],"prov":"C1"},{"ref":"#C1.21","file":"c3-31","fotos":["c3-31","c3-62","c3-38"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["café","blanco","azul"],"prov":"C1"},{"ref":"#C1.22","file":"c3-32","fotos":["c3-32","c3-64","c3-40"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["negro","blanco","café"],"prov":"C1"},{"ref":"#C1.23","file":"c3-33","fotos":["c3-33","c3-63"],"sec":"camisas","marca":"Nike","cat":"deportivo","color":["blanco","gris","negro"],"prov":"C1"},{"ref":"#C1.24","file":"c3-44","fotos":["c3-44"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["beige","negro","blanco"],"prov":"C1"},{"ref":"#C1.25","file":"c3-45","fotos":["c3-45"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["beige","blanco","negro"],"prov":"C1"},{"ref":"#C1.26","file":"c3-48","fotos":["c3-48"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["negro","beige"],"prov":"C1"},{"ref":"#C1.27","file":"c3-49","fotos":["c3-49"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["beige","gris"],"prov":"C1"},{"ref":"#C1.28","file":"c3-52","fotos":["c3-52"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["beige","blanco","gris"],"prov":"C1"},{"ref":"#C1.29","file":"c3-53","fotos":["c3-53"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["gris","beige"],"prov":"C1"},{"ref":"#C1.30","file":"c3-46","fotos":["c3-46","c3-47"],"sec":"camisas","marca":"Saint Theory","cat":"urbano","color":["beige","blanco","negro"],"prov":"C1"},{"ref":"#C1.31","file":"c3-50","fotos":["c3-50"],"sec":"camisas","marca":"Saint Theory","cat":"urbano","color":["gris","blanco","negro"],"prov":"C1"},{"ref":"#C1.32","file":"c3-51","fotos":["c3-51"],"sec":"camisas","marca":"Saint Theory","cat":"urbano","color":["beige","gris"],"prov":"C1"},{"ref":"#C1.33","file":"c3-86","fotos":["c3-86"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["blanco","negro"],"prov":"C1"},{"ref":"#C1.34","file":"c3-87","fotos":["c3-87"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["blanco","negro"],"prov":"C1"},{"ref":"#C1.35","file":"c3-88","fotos":["c3-88"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["blanco","beige"],"prov":"C1"},{"ref":"#C1.36","file":"c3-89","fotos":["c3-89"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["negro","beige"],"prov":"C1"},{"ref":"#C1.37","file":"c3-90","fotos":["c3-90"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.38","file":"c3-91","fotos":["c3-91"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["negro","blanco","café"],"prov":"C1"},{"ref":"#C1.39","file":"c3-92","fotos":["c3-92"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["café","rojo"],"prov":"C1"},{"ref":"#C1.40","file":"c3-68","fotos":["c3-68"],"sec":"camisas","marca":"Godspeed","cat":"urbano","color":["negro"],"prov":"C1"},{"ref":"#C1.41","file":"c3-66","fotos":["c3-66","c3-69"],"sec":"camisas","marca":"Hellstar","cat":"urbano","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.42","file":"c3-67","fotos":["c3-67","c3-71","c3-73"],"sec":"camisas","marca":"Monastery","cat":"urbano","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.43","file":"c3-74","fotos":["c3-74"],"sec":"camisas","marca":"Undergold","cat":"urbano","color":["blanco","negro"],"prov":"C1"},{"ref":"#C1.44","file":"c3-75","fotos":["c3-75"],"sec":"camisas","marca":"Balenciaga","cat":"casual","color":["blanco","negro"],"prov":"C1"},{"ref":"#C1.47","file":"c3-76","fotos":["c3-76","c3-77"],"sec":"camisas","marca":"Hugo","cat":"casual","color":["negro","rojo"],"prov":"C1"},{"ref":"#C1.48","file":"c3-78","fotos":["c3-78","c3-79"],"sec":"camisas","marca":"Armani Exchange","cat":"casual","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.49","file":"c3-80","fotos":["c3-80","c3-81"],"sec":"camisas","marca":"Oakley","cat":"casual","color":["negro","blanco"],"prov":"C1"},{"ref":"#C1.50","file":"c3-82","fotos":["c3-82","c3-83"],"sec":"camisas","marca":"Boss","cat":"casual","color":["verde","negro"],"prov":"C1"},{"ref":"#C1.51","file":"c3-84","fotos":["c3-84"],"sec":"camisas","marca":"Calvin Klein","cat":"casual","color":["gris","negro"],"prov":"C1"}];   // ref = #proveedor.modelo · prov es interno
+/* ======================================== */
+
+const COLORES={negro:"#1a1a1a",blanco:"#ffffff",beige:"#d9c7a7",gris:"#9aa0a6",azul:"#24396b",café:"#7a4a2a",rosado:"#f2b8c6",rojo:"#c8202f",verde:"#3f7a4a",morado:"#7b3fa0"};
+const CATS=[["deportivo","Deportivo"],["urbano","Urbano"],["casual","Casual"]];
+const FX_ALL=["reveal","press","shine","shrink","filter","zoom","fly"];
+const WA_ICON='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3Z"/></svg>';
+const PLUS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+
+const APP=document.getElementById("app");
+const $=s=>APP.querySelector(s);
+const SC=APP.closest("[data-scroller]");            // en la vista previa, la pantalla simulada hace scroll
+const scrollEl=()=>SC||document.scrollingElement;
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const imgs=p=>(p.fotos||[p.file]).map(f=>"img/"+f+".jpg");
+const img=p=>imgs(p)[0];
+const cols=p=>[].concat(p.color);
+const colTxt=p=>cols(p).join(", ");
+const kind=p=>p.sec==="camisas"?"Prenda":"Zapato";
+const dots=p=>cols(p).map(c=>`<i class="dot" style="background:${COLORES[c]||"#888"}"></i>`).join("");
+const byRef=r=>PRODUCTOS.find(p=>p.ref===r);
+const hashOf=ref=>"ref-"+byRef(ref).file;
+const WA=(Array.isArray(WHATSAPP)?WHATSAPP:(WHATSAPP?[["WhatsApp",WHATSAPP]]:[])).filter(x=>x&&x[1]);
+const waLink=(msg,num)=>{const t=encodeURIComponent(msg);num=num||(WA[0]&&WA[0][1]);return num?`https://wa.me/${num}?text=${t}`:`https://wa.me/?text=${t}`};
+const fmtNum=n=>{const d=n.replace(/^57/,"");return "+57 "+d.replace(/(\d{3})(\d{3})(\d{4})/,"$1 $2 $3")};
+/* con varios números, al tocar un botón de WhatsApp el cliente elige a quién escribir */
+function openChooser(href){
+  const msg=new URL(href).searchParams.get("text")||"";
+  $("#waList").innerHTML=WA.map(([name,num])=>`<a class="waopt" data-direct="1" href="${waLink(msg,num)}" target="_blank" rel="noopener">${WA_ICON}<span><b>${name}</b><small>${fmtNum(num)}</small></span></a>`).join("");
+  $("#waChoose").hidden=false;
+}
+function closeChooser(){$("#waChoose").hidden=true}
+const msgOne=p=>`Hola, me interesa la referencia ${p.ref} (${p.marca}, ${p.cat}, color ${colTxt(p)}). ¿Qué tallas tienen disponibles y cuál es el precio?`;
+const has=f=>APP.classList.contains("fx-"+f);
+
+let sec=SECCIONES[0][0], q="", sel=[], view=[], cur=-1;
+const F={cat:new Set(),brand:new Set(),color:new Set()};   // filtros con selección múltiple
+try{sel=JSON.parse(localStorage.getItem("sel")||"[]").filter(r=>byRef(r))}catch(e){sel=[]}
+const save=()=>{try{localStorage.setItem("sel",JSON.stringify(sel))}catch(e){}};
+
+const inSec=()=>PRODUCTOS.filter(p=>p.sec===sec);
+const brandOrder=()=>{const c={};inSec().forEach(p=>c[p.marca]=(c[p.marca]||0)+1);return Object.keys(c).sort((a,b)=>c[b]-c[a]||a.localeCompare(b))};
+const field={cat:"cat",brand:"marca",color:"color"};
+const has1=(p,k,v)=>k==="color"?cols(p).includes(v):p[field[k]]===v;
+function match(p,skip){
+  for(const k in F){if(k===skip)continue;if(F[k].size&&![...F[k]].some(v=>has1(p,k,v)))return false}
+  const qq=q.trim().toLowerCase();if(!qq)return true;
+  const qd=qq.replace(/[^0-9a-z]/g,"");
+  return p.marca.toLowerCase().includes(qq)||(qd&&p.ref.replace(/[#.]/g,"").includes(qd));
+}
+
+function chip(group,val,label,n,extra=""){return `<button class="chip" type="button" data-f="${group}" data-v="${val}" aria-pressed="${val?F[group].has(val):!F[group].size}">${extra}${label} <small>${n}</small></button>`}
+function renderSecs(){
+  $("#secs").innerHTML=SECCIONES.map(([k,l])=>`<button class="sec" type="button" data-sec="${k}" aria-current="${sec===k}">${l}<small>${PRODUCTOS.filter(p=>p.sec===k).length||"pronto"}</small></button>`).join("");
+}
+function renderChips(){
+  const S=inSec(), n=(g,v)=>S.filter(p=>match(p,g)&&(!v||has1(p,g,v))).length;
+  const colN=F.color.size;
+  $("#cats").innerHTML=chip("cat","","Todos",n("cat"))+CATS.map(([k,l])=>chip("cat",k,l,n("cat",k))).join("")
+    +`<button class="chip ghost" type="button" id="colorBtn" aria-pressed="${!$("#colorsRow").hidden}">Color${colN?` · ${colN}`:""} ▾</button>`;
+  $("#brands").innerHTML=chip("brand","","Todas",n("brand"))+brandOrder().map(b=>chip("brand",b,b,n("brand",b))).join("");
+  const all={};S.forEach(p=>cols(p).forEach(c=>all[c]=(all[c]||0)+1));
+  $("#colors").innerHTML=chip("color","","Todos",n("color"))+Object.keys(all).sort((a,b)=>all[b]-all[a])
+    .map(c=>chip("color",c,cap(c),n("color",c),`<i class="dot" style="background:${COLORES[c]||"#888"}"></i>`)).join("");
+}
+function card(p,i,anim){const on=sel.includes(p.ref);return `
+  <article class="card${anim?" enter":""}" style="--i:${i}">
+    <button class="ph" type="button" data-i="${i}" aria-label="Ver ${p.ref} en grande"><img src="${img(p)}" alt="${kind(p)} ${p.marca} ${p.cat} color ${colTxt(p)}, referencia ${p.ref}" loading="lazy" decoding="async">${imgs(p).length>1?`<span class="nph">${imgs(p).length} fotos</span>`:""}</button>
+    <span class="ref">${p.ref}</span>
+    <button class="pick" type="button" data-ref="${p.ref}" aria-pressed="${on}" aria-label="${on?"Quitar de":"Agregar a"} mi selección">${on?CHECK:PLUS}</button>
+    <div class="info">
+      <div class="brand">${p.marca}</div>
+      <div class="meta"><span>${cap(p.cat)}</span><span class="col">${dots(p)}<em>${cols(p).length>1?cols(p).length+" colores":p.color}</em></span></div>
+      <a class="ask" href="${waLink(msgOne(p))}" target="_blank" rel="noopener">${WA_ICON}<span class="long">Preguntar talla y precio</span><span class="short">Preguntar</span></a>
+    </div>
+  </article>`}
+function paint(anim){
+  const order=brandOrder();
+  view=inSec().filter(p=>match(p)).sort((a,b)=>order.indexOf(a.marca)-order.indexOf(b.marca)||a.ref.localeCompare(b.ref,undefined,{numeric:true}));
+  let h="",i=0;
+  if(F.brand.size!==1){order.forEach(b=>{const it=view.filter(p=>p.marca===b);if(!it.length)return;
+    h+=`<h3 class="grp${anim?" enter":""}" style="--i:${i}">${b}<small>${it.length}</small></h3>`;it.forEach(p=>h+=card(p,i++,anim))})}
+  else view.forEach(p=>h+=card(p,i++,anim));
+  $("#grid").innerHTML=h;
+  const none=!inSec().length;
+  APP.querySelector(".bar").hidden=none;$("#soon").hidden=!none;
+  if(none)$("#soonName").textContent=SECCIONES.find(s=>s[0]===sec)[1].toLowerCase();
+  $("#empty").hidden=view.length>0||none;
+  const filtering=q.trim()||F.cat.size||F.brand.size||F.color.size;
+  if(featSec!==sec)renderFeat();
+  $("#feat").hidden=!!filtering||!$("#feat").innerHTML;
+  renderSecs();renderChips();setupReveal();
+}
+/* Al filtrar: subir hasta la rejilla y mostrar la cascada */
+let leaveT=null;
+function render(anim){
+  anim=!!anim&&has("filter");
+  if(!anim){paint(false);return}
+  const top=APP.querySelector("main").offsetTop-APP.querySelector(".bar").offsetHeight-(SC?50:0);
+  if(scrollEl().scrollTop>top+4)scrollEl().scrollTo({top});
+  const g=$("#grid");g.classList.add("leaving");clearTimeout(leaveT);
+  leaveT=setTimeout(()=>{paint(true);g.classList.remove("leaving")},170);
+}
+
+/* ===== Carrito ===== */
+function renderCart(bump){
+  const n=sel.length;
+  $("#cartN").textContent=n;$("#cartN").classList.toggle("zero",!n);
+  $("#cartBtn").setAttribute("aria-label",`Ver mi selección, ${n} ${n===1?"referencia":"referencias"}`);
+  $("#dCount").textContent=`${n} ${n===1?"referencia":"referencias"}`;
+  $("#items").innerHTML=n?sel.map(r=>{const p=byRef(r);return `<div class="item" data-item="${r}"><img src="${img(p)}" alt=""><div><b>${p.ref}</b><span class="br">${p.marca}</span><span>${cap(p.cat)} · ${colTxt(p)}</span></div><button type="button" data-del="${r}" aria-label="Quitar ${r}">${TRASH}</button></div>`}).join("")
+    :`<div class="dempty"><div class="ico">${$("#cartBtn .ico").innerHTML}</div><b>Aún no has elegido zapatos</b>Toca el botón + en los modelos que te gusten y aquí los verás todos juntos para preguntar por un solo mensaje.</div>`;
+  $("#dFoot").hidden=!n;
+  updateSend();
+  if(bump&&has("press")){const b=$("#cartBtn");b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump")}
+}
+function updateSend(){
+  const t=$("#talla").value.trim();
+  const lines=sel.map(r=>{const p=byRef(r);return `• ${p.ref} – ${p.marca}, ${colTxt(p)}`}).join("\n");
+  const msg=`Hola, me interesan estas referencias:\n${lines}${t?`\n\nMi talla: ${t}`:""}\n\n¿Qué tallas tienen disponibles y cuál es el precio de cada una?`;
+  const s=$("#send");s.href=waLink(msg);s.innerHTML=`${WA_ICON}Enviar ${sel.length} por WhatsApp`;s.setAttribute("aria-disabled",!sel.length);
+}
+function openCart(on){$("#drawer").classList.toggle("on",on);$("#scrim").classList.toggle("on",on);$("#drawer").setAttribute("aria-hidden",!on);lock(on)}
+function setSel(ref,on,srcImg){
+  const was=sel.includes(ref);if(on===was)return;
+  sel=on?[...sel,ref]:sel.filter(r=>r!==ref);save();
+  APP.querySelectorAll(`.pick[data-ref="${ref}"]`).forEach(b=>{b.setAttribute("aria-pressed",on);b.innerHTML=on?CHECK:PLUS;b.setAttribute("aria-label",`${on?"Quitar de":"Agregar a"} mi selección`);
+    if(on&&has("press")){b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop")}});
+  if(on&&srcImg&&has("fly"))fly(srcImg,()=>renderCart(true));else renderCart(on);
+  if(cur>=0)syncLbAdd();
+}
+/* coordenadas dentro del marco (la vista previa puede estar escalada) */
+function local(r){const host=APP.closest(".vp");if(!host)return r;const h=host.getBoundingClientRect(),s=h.width/host.offsetWidth;
+  return {left:(r.left-h.left)/s,top:(r.top-h.top)/s,width:r.width/s,height:r.height/s}}
+function fly(src,done){
+  const a=local(src.getBoundingClientRect()),b=local($("#cartBtn").getBoundingClientRect());
+  const f=document.createElement("img");f.src=src.currentSrc||src.src;f.className="fly";
+  Object.assign(f.style,{left:a.left+"px",top:a.top+"px",width:a.width+"px",height:a.height+"px"});APP.appendChild(f);
+  const dx=b.left+b.width/2-(a.left+a.width/2),dy=b.top+b.height/2-(a.top+a.height/2),s=44/Math.max(a.width,a.height);
+  const an=f.animate([{transform:"translate(0,0) scale(1)",opacity:1,borderRadius:"12px"},
+    {transform:`translate(${dx*.55}px,${dy*.25-60}px) scale(${(1+s)/2})`,opacity:1,offset:.5},
+    {transform:`translate(${dx}px,${dy}px) scale(${s})`,opacity:.2,borderRadius:"50%"}],{duration:720,easing:"cubic-bezier(.5,0,.3,1)"});
+  an.onfinish=()=>{f.remove();done()};
+}
+
+/* Aparición al deslizar */
+let io=null;
+function setupReveal(){
+  if(io){io.disconnect();io=null}
+  APP.querySelectorAll(".card.pre").forEach(c=>c.classList.remove("pre"));
+  if(!has("reveal")||!("IntersectionObserver" in window))return;
+  io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove("pre");io.unobserve(e.target)}}),{root:SC||null,rootMargin:"0px 0px -6% 0px"});
+  const r=SC?SC.getBoundingClientRect():{top:0,height:innerHeight};
+  APP.querySelectorAll(".card").forEach(c=>{if(c.getBoundingClientRect().top-r.top>r.height){c.classList.add("pre");io.observe(c)}});
+}
+/* Logo en la barra */
+const onScroll=()=>APP.classList.toggle("scrolled",scrollEl().scrollTop>$(".hero").offsetHeight-10);
+(SC||window).addEventListener("scroll",onScroll,{passive:true});
+
+/* Visor */
+function lock(on){(SC||document.body).style.overflow=on?"hidden":""}
+function syncLbAdd(){const p=lbList[cur];if(!p)return;const on=sel.includes(p.ref);$("#lbAdd").innerHTML=on?CHECK+"<span>En mi selección</span>":PLUS+"<span class=\"long\">Agregar a mi selección</span><span class=\"short\">Agregar</span>"}
+let lbList=[];
+function openLb(i,list){lbList=list||view;cur=i;const p=lbList[i];if(!p)return;
+  const im=$("#lbImg");im.classList.remove("z","in");im.src=img(p);im.alt=`Referencia ${p.ref}`;
+  const ph=imgs(p);$("#lbThumbs").hidden=ph.length<2;
+  $("#lbThumbs").innerHTML=ph.map((s,k)=>`<button type="button" data-th="${k}" aria-label="Foto ${k+1}" aria-pressed="${!k}"><img src="${s}" alt=""></button>`).join("");
+  if(has("zoom")){void im.offsetWidth;im.classList.add("in")}
+  $("#lbRef").textContent=p.ref;$("#lbMeta").textContent=`${p.marca} · ${cap(p.cat)} · ${cap(colTxt(p))}`;
+  $("#lbAsk").innerHTML=WA_ICON+"Preguntar";$("#lbAsk").href=waLink(msgOne(p));syncLbAdd();
+  $("#lbHint").hidden=!has("zoom");
+  $("#lb").hidden=false;lock(true);
+  if(USE_HASH&&location.hash!=="#"+hashOf(p.ref))history.replaceState(null,"","#"+hashOf(p.ref));
+}
+function closeLb(){$("#lb").hidden=true;lock(false);cur=-1;if(USE_HASH&&location.hash)history.replaceState(null,"",location.pathname+location.search)}
+function step(d){if(cur<0)return;openLb((cur+d+lbList.length)%lbList.length,lbList)}
+
+APP.addEventListener("click",e=>{
+  const wa=e.target.closest('a[href^="https://wa.me/"]');
+  if(wa){if(wa.dataset.direct){setTimeout(closeChooser,300);return}
+    if(WA.length>1){e.preventDefault();openChooser(wa.href);return}}
+  if(e.target.closest("#waClose")||e.target.id==="waChoose"){closeChooser();return}
+  const s=e.target.closest("[data-sec]");if(s){sec=s.dataset.sec;APP.dataset.section=sec;for(const k in F)F[k].clear();render(true);return}
+  if(e.target.closest("#colorBtn")){$("#colorsRow").hidden=!$("#colorsRow").hidden;renderChips();return}
+  const f=e.target.closest("[data-f]");if(f){const set=F[f.dataset.f],v=f.dataset.v;
+    if(!v)set.clear();else set.has(v)?set.delete(v):set.add(v);render(true);return}
+  const pk=e.target.closest(".pick");if(pk){const on=!sel.includes(pk.dataset.ref);setSel(pk.dataset.ref,on,on?pk.closest(".card,.fcard").querySelector(".ph img"):null);return}
+  const ph=e.target.closest(".ph");if(ph){ph.dataset.list?openLb(+ph.dataset.j,featList(ph.dataset.list)):openLb(+ph.dataset.i);return}
+  const rn=e.target.closest("[data-rail-go]");if(rn){const t=rn.closest(".rail").querySelector(".track"),d=+rn.dataset.railGo,h=half(t);pause(t);
+    if(d<0&&t.scrollLeft<t.clientWidth&&h)t.scrollLeft+=h;
+    t.scrollBy({left:d*t.clientWidth*.8,behavior:"smooth"});return}
+  const del=e.target.closest("[data-del]");if(del){const row=del.closest(".item");row.classList.add("out");setTimeout(()=>setSel(del.dataset.del,false),220);return}
+});
+$("#cartBtn").onclick=()=>{renderCart();openCart(true)};
+$("#dClose").onclick=()=>openCart(false);$("#scrim").onclick=()=>openCart(false);
+$("#clear").onclick=()=>{[...sel].forEach(r=>setSel(r,false))};
+$("#talla").addEventListener("input",updateSend);
+$("#q").addEventListener("input",e=>{q=e.target.value;render(false)});
+$("#lbAdd").onclick=()=>{const p=lbList[cur];setSel(p.ref,!sel.includes(p.ref))};
+$("#lbClose").onclick=closeLb;$("#lbPrev").onclick=()=>step(-1);$("#lbNext").onclick=()=>step(1);
+$("#lb").addEventListener("click",e=>{if(e.target.id==="lb"){closeLb();return}
+  const th=e.target.closest("[data-th]");if(th){const im=$("#lbImg");im.classList.remove("z");im.src=imgs(lbList[cur])[+th.dataset.th];
+    APP.querySelectorAll("#lbThumbs button").forEach(b=>b.setAttribute("aria-pressed",b===th))}});
+$("#lbImg").addEventListener("dblclick",e=>{if(!has("zoom"))return;const im=e.currentTarget,r=im.getBoundingClientRect();
+  im.style.transformOrigin=`${((e.clientX-r.left)/r.width*100).toFixed(1)}% ${((e.clientY-r.top)/r.height*100).toFixed(1)}%`;im.classList.remove("in");im.classList.toggle("z")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("#waChoose").hidden){closeChooser();return}if($("#drawer").classList.contains("on"))openCart(false);else if(!$("#lb").hidden)closeLb();return}
+  if($("#lb").hidden)return;if(e.key==="ArrowLeft")step(-1);if(e.key==="ArrowRight")step(1)});
+let tx=null;$("#lb").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+$("#lb").addEventListener("touchend",e=>{if(tx===null||$("#lbImg").classList.contains("z"))return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)step(dx<0?1:-1);tx=null});
+
+function setFx(list){FX_ALL.forEach(f=>APP.classList.toggle("fx-"+f,list.includes(f)));onScroll();setupReveal()}
+window.setFx=setFx;window.replay=()=>{paint(true)};
+function fromHash(){if(!USE_HASH)return;const h=location.hash.slice(1);if(!h){if(!$("#lb").hidden)closeLb();return}
+  const i=view.findIndex(p=>hashOf(p.ref)===h);if(i>=0)openLb(i)}
+/* ===== Carruseles destacados ===== */
+const FLAME='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.6 2.2c.4 3-1.2 4.7-2.7 6.3C8.4 10 7 11.6 7 14.3A5 5 0 0 0 12 19.5a5 5 0 0 0 5-5.2c0-2-.9-3.4-1.8-4.6-.2 1.4-.9 2.4-2 2.9.6-3.6-.1-7.4-.6-10.4Z"/><path d="M12 22a7.5 7.5 0 0 1-7.5-7.7c0-3.7 2-5.9 3.6-7.6.5 2.4 1.6 3.4 2.4 3.9" opacity=".35"/></svg>';
+const TALK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4Z"/><path d="M9 10h.01M13 10h.01M17 10h.01" stroke-linecap="round" stroke-width="3"/></svg>';
+const RAILS=[["hot","En hot",FLAME,"Lo que más se está moviendo"],["preguntados","Los más preguntados",TALK,"Lo que más nos piden por WhatsApp"]];
+let featSec=null;
+const featList=k=>((DESTACADOS[sec]||{})[k]||[]).map(byRef).filter(Boolean);
+function renderFeat(){
+  featSec=sec;const D=DESTACADOS[sec];
+  if(!D){$("#feat").innerHTML="";return}
+  $("#feat").innerHTML=RAILS.filter(([k])=>featList(k).length).map(([k,t,ic,sub])=>`
+  <section class="rail rail-${k}" aria-label="${t}">
+    <div class="rail-h"><h3><span class="ri">${ic}</span>${t}<small>${sub}</small></h3>
+      <div class="rail-nav"><button type="button" data-rail-go="-1" aria-label="Anteriores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 5-7 7 7 7"/></svg></button><button type="button" data-rail-go="1" aria-label="Siguientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button></div></div>
+    <div class="track">${[0,1].map(copy=>featList(k).map((p,j)=>{const on=sel.includes(p.ref);return `
+      <article class="fcard"${copy?' aria-hidden="true" data-clone="1"':""}>
+        <button class="ph" type="button" data-list="${k}" data-j="${j}" aria-label="Ver ${p.ref} en grande"><img src="${img(p)}" alt="${kind(p)} ${p.marca}, referencia ${p.ref}" loading="lazy" decoding="async">${k==="preguntados"?`<span class="rank" aria-hidden="true">${j+1}</span>`:`<span class="hotb">${FLAME}Hot</span>`}</button>
+        <span class="ref">${p.ref}</span>
+        <button class="pick" type="button" data-ref="${p.ref}" aria-pressed="${on}" aria-label="${on?"Quitar de":"Agregar a"} mi selección">${on?CHECK:PLUS}</button>
+        <div class="finfo"><b>${p.marca}</b><span>${cap(p.cat)} · ${colTxt(p)}</span></div>
+      </article>`}).join("")).join("")}</div>
+  </section>`).join("");
+  APP.querySelectorAll("[data-clone] button").forEach(b=>b.tabIndex=-1);
+  APP.querySelectorAll(".track").forEach(t=>{t._pos=0;["pointerdown","wheel","touchstart","focusin"].forEach(ev=>t.addEventListener(ev,()=>pause(t),{passive:true}));
+    t.addEventListener("mouseenter",()=>t._hover=true);t.addEventListener("mouseleave",()=>t._hover=false)});
+}
+/* desplazamiento continuo: los carruseles corren solos y dan la vuelta sin fin;
+   se detienen mientras la persona los toca, pasa el mouse o usa las flechas */
+const SPEED=34; // píxeles por segundo
+function pause(t,ms=6000){t._until=Date.now()+ms;t._pos=null}
+function half(t){const c=t.querySelector("[data-clone]");return c?c.offsetLeft-t.firstElementChild.offsetLeft:0}
+let lastT=0;
+function tick(now){
+  const dt=Math.min(.05,(now-(lastT||now))/1000);lastT=now;
+  const still=matchMedia("(prefers-reduced-motion: reduce)").matches||$("#feat").hidden||!$("#lb").hidden||$("#drawer").classList.contains("on");
+  if(!still)APP.querySelectorAll(".track").forEach(t=>{
+    const h=half(t);if(!h)return;
+    if(t._hover||(t._until||0)>Date.now()){ if(t.scrollLeft>=h)t.scrollLeft-=h; return }
+    if(t._pos==null)t._pos=t.scrollLeft;
+    t._pos+=SPEED*dt; if(t._pos>=h)t._pos-=h;
+    t.scrollLeft=t._pos;
+  });
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+APP.dataset.section=sec;
+setFx(EFECTOS);paint(false);renderCart();fromHash();window.addEventListener("hashchange",fromHash);
+
+</script>
+</body>
+</html>
